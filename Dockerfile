@@ -58,7 +58,8 @@ ADD standalone-openshift-lma.xml "$JBOSS_HOME/standalone/configuration/"
 ENTRYPOINT $JBOSS_HOME/bin/standalone.sh -c standalone-openshift-lma.xml
 
 # deploy app
-ADD ${APP} "$JBOSS_HOME/standalone/deployments/"
+ADD spring-jboss-0.0.1-SNAPSHOT.war "$JBOSS_HOME/standalone/deployments/"
+#ADD ${APP} "$JBOSS_HOME/standalone/deployments/"
 #ADD dbload.ear "$JBOSS_HOME/standalone/deployments/"
 #ADD xsh-eaccounts-ear-0.0.1-SNAPSHOT.ear "$JBOSS_HOME/standalone/deployments/"
 #ADD apixapp.ear "$JBOSS_HOME/standalone/deployments/"
