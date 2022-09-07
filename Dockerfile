@@ -50,7 +50,7 @@ RUN echo "JAVA_OPTS=\"\$JAVA_OPTS -Djboss.bind.address=0.0.0.0 -Djboss.bind.addr
 RUN chown -R jboss:jboss /opt/eap
 
 # JBoss ports
-EXPOSE 8080 9990 9999
+# EXPOSE 8080 9990 9999
 
 # start JBoss
 #ENTRYPOINT $JBOSS_HOME/bin/standalone.sh -c standalone-full-ha.xmlf
