@@ -28,6 +28,9 @@ pipeline {
     //This variable should change for different environments
     ENV_VAR="dev"    
     url="http://localhost:%CONTAINER_PORT%/spring-jboss-0.0.1-SNAPSHOT/hello"
+    SAMPLE_APP_NAME="spring-jboss"
+    SAMPLE_IMG_NAME="sample-eap"
+    
    }
   agent any
  /* {
@@ -36,8 +39,14 @@ pipeline {
         }
     } */
 parameters {
-        booleanParam(name: "WINDOWS", defaultValue: true)
+         booleanParam(name: "Local", defaultValue: true, description: 'WINDOWS Operating system')
+         booleanParam(name: "MSVx", defaultValue: false)
+         booleanParam(name: "AWS", defaultValue: false)
+         
+         //choice(name: 'Platform', choices: ['Local', 'MSVx', 'AWS'],  description: 'Platform where application will be deployed')
+        
     }
+
 stages {
     stage('Parse Env CSV For Openshift Container Platform') {
             steps {
@@ -72,14 +81,16 @@ stages {
       steps 
 	  {
         script {
-                    if (params.WINDOWS) {
+                    if (params.Local) {
                          configFileProvider([configFile(fileId: 'Maven-settings', variable: 'Maven_settings')]) {
                          bat 'mvn clean package'
                     }
                     } else {
-                        configFileProvider([configFile(fileId: 'Maven-settings', variable: 'Maven_settings')]) {
-                        sh 'mvn clean package'
-                    }
+                        if (params.platform=="MSVx") {
+                            configFileProvider([configFile(fileId: 'Maven-settings', variable: 'Maven_settings')]) {
+                                sh 'mvn clean package'
+                            }
+                        }    
                 }
 	     
           } 
@@ -103,14 +114,27 @@ stages {
                            tar -czvf xsh-sonar_reports_${BUILD_ID}_${CURRENTEPOCTIME}.tgz xsh-sonar_reports_${BUILD_ID}'''
             }
 		} */
-stage('Build & Push Docker Image') {
+stage('Build Docker Image') {
      steps 
 	  {
         script {
-                        if (params.WINDOWS) {     
+                        if (params.Local) {     
                             bat 'xcopy /s/y "C:/Users/rr38/.jenkins/workspace/spring-jboss/target" "C:/Users/rr38/.jenkins/workspace/spring-jboss"'
                             //bat 'docker build --tag spring-jboss .'
-                            bat 'docker build --tag sample-eap .'
+                            //bat 'docker build --tag sample-eap .'
+                             //bat 'docker run -d -p 9999:9999 -p 9990:9990 spring-jboss'
+                            //bat 'docker run -d -p 8880:8880 -p 8883:8883 sample-eap'
+                            //docker login ${DOCKER_REGISTRY_URL_HUB} -u ${DOCKER_USER_LOCAL} -p ${DOCKER_LOCAL_PASSWORD}'
+                            // WORKING: bat 'docker run -p 8880:8080 sample-eap'
+                           // bat 'docker push ${env.DOCKER_IMAGE}'
+                            //bat 'sudo docker push ${env.LATEST_TAG}'
+                            //bat 'docker image remove ${envDOCKER_IMAGE}'
+                            //bat 'docker image remove ${LATEST_TAG}'
+                            
+                            //bat "%cd%\\MySimpleProject\\bin\\Execute.bat ${env.BRANCH_NAME}"}
+                            bat "C:/Users/rr38/.jenkins/workspace/spring-jboss/runDocker.bat ${env.SAMPLE_APP_NAME} ${env.SAMPLE_IMG_NAME}"
+                            
+                            bat 'start chrome "http://localhost:8880/spring-jboss-0.0.1-SNAPSHOT/hello"'
                         } else {
                             sh '''
                                 sudo docker login ${DOCKER_REGISTRY_URL} -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
@@ -119,18 +143,16 @@ stage('Build & Push Docker Image') {
                             '''        
                             sh "./gradlew preRelease"
                         }
-                }
-     
+	           }
+        }
     }
-}
 
-stage('Push to Artifactory') { 
+
+stage('Push Image to Artifactory') { 
       steps {
             script {
-                    if (params.WINDOWS) {
-                            //bat 'docker run -d -p 9999:9999 -p 9990:9990 spring-jboss'
-                            //bat 'docker run -d -p 8880:8880 -p 8883:8883 sample-eap'
-                            bat 'docker run -p 8880:8080 sample-eap'
+                    if (params.Local) {
+                           
                             //bat 'docker login ${env.DOCKER_REGISTRY_URL} -u ${env.DOCKER_USER} -p ${env.DOCKER_PASSWORD}'
                             //bat 'docker push ${env.DOCKER_IMAGE}'
                             //bat 'docker push ${env.LATEST_TAG}'
@@ -154,7 +176,7 @@ stage('Connect to Openshift ') {
       steps 
 	  {
         script {
-                    if (params.WINDOWS) {
+                    if (params.Local) {
                         echo "oc login windows"
                     } else {        
                         sh '''
@@ -170,7 +192,7 @@ stage('Deployment on OCP ') {
             steps 
             {
                 script {
-                    if (params.WINDOWS) {
+                    if (params.Local) {
                         echo "oc deploy windows"
                     } else {         
                         sh '''               
