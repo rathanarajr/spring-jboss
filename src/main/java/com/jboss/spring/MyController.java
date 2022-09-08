@@ -10,7 +10,7 @@ public class MyController {
 	@RequestMapping("/hello")
 	public String sayHello() {
 		
-		return "Hello LMA AR Stakeholder, Containerized version of Sample Application is running on JBOSS EAP 7.4. Please load other applications binary/archive on LIBO to containerize other applications";
+return "<html><body><h2> Hello LMA AR Stakeholder, Containerized version of Sample Application is running on JBOSS EAP 7.4.Please load other applications binary/archive to containerize other applications </h2></body></html>";
 		
 	}
 
