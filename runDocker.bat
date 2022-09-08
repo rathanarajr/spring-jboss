@@ -12,7 +12,7 @@ SET DOCKER_PASSWORD_LOCAL="Rathan@docker1"
 
 REM SET URL="http://localhost:%CONTAINER_PORT%/spring-jboss-0.0.1-SNAPSHOT/hello"
 
-CD b2i
+REM CD b2i
 
 rem docker build --tag %IMAGE_NAME% .
 
@@ -26,7 +26,7 @@ REM WORKING COPY %APPPATH%
 
 REM docker login ${DOCKER_REGISTRY_URL_HUB} -u ${DOCKER_USER_LOCAL} -p ${DOCKER_LOCAL_PASSWORD}'
 
-docker login -u %DOCKER_USER_LOCAL% -p %DOCKER_PASSWORD_LOCAL%'
+REM docker login -u %DOCKER_USER_LOCAL% -p %DOCKER_PASSWORD_LOCAL%'
 
 docker build --tag %IMAGE_NAME% --build-arg appname=%APPNAME% .
 
