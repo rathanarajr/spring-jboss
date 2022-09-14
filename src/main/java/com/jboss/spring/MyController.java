@@ -20,7 +20,7 @@ public class HomeController {
 
     @RequestMapping("/")
     public String welcome() throws Exception {
-        return "home.html"; //note that this says .html
+        return "index.html"; //note that this says .html
     }
 }
 
