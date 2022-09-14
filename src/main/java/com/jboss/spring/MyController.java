@@ -3,7 +3,7 @@ package com.jboss.spring;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**@RestController
+@RestController
 public class MyController {
 	
 	
@@ -14,15 +14,15 @@ public class MyController {
 	//return "index";
 	}
 	
-}**/
-@Controller
+}
+/**@Controller
 public class HomeController {
 
     @RequestMapping("/")
     public String welcome() throws Exception {
         return "index.html"; //note that this says .html
     }
-}
+}**/
 
 	
 	
