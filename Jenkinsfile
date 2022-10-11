@@ -39,11 +39,11 @@ pipeline {
         }
     } */
 parameters {
-         booleanParam(name: "Local", defaultValue: true, description: 'WINDOWS Operating system')
-         booleanParam(name: "MSVx", defaultValue: false)
-         booleanParam(name: "AWS", defaultValue: false)
+         booleanParam(name: "SampleApp_On_Local", defaultValue: true, description: 'WINDOWS Operating system')
+         booleanParam(name: "SampleApp_On_MSVx", defaultValue: false)
+         booleanParam(name: "LMApp_On_MSVx", defaultValue: false)
          
-         //choice(name: 'Platform', choices: ['Local', 'MSVx', 'AWS'],  description: 'Platform where application will be deployed')
+         //choice(name: 'Platform', choices: ['Local', 'MSVx', 'LMApp_On_MSVx'],  description: 'Platform where application will be deployed')
         
     }
 
@@ -81,16 +81,19 @@ stages {
       steps 
 	  {
         script {
-                    if (params.Local) {
+                    if (params.SampleApp_On_Local) {
                          configFileProvider([configFile(fileId: 'Maven-settings', variable: 'Maven_settings')]) {
                          bat 'mvn clean package'
                     }
                     } else {
-                        if (params.platform=="MSVx") {
+                        if (params.platform=="SampleApp_On_MSVx") {
                             configFileProvider([configFile(fileId: 'Maven-settings', variable: 'Maven_settings')]) {
                                 sh 'mvn clean package'
                             }
-                        }    
+			}  else {
+				configFileProvider([configFile(fileId: 'Maven-settings', variable: 'Maven_settings')]) {
+                                sh 'mvn clean package'
+			}  
                 }
 	     
           } 
@@ -118,7 +121,7 @@ stage('Build Docker Image') {
      steps 
 	  {
         script {
-                        if (params.Local) {     
+                        if (params.SampleApp_On_Local) {     
                             bat 'xcopy /s/y "C:/Users/rr38/.jenkins/workspace/spring-jboss/target" "C:/Users/rr38/.jenkins/workspace/spring-jboss"'
                             //bat 'docker build --tag spring-jboss .'
                             //bat 'docker build --tag sample-eap .'
@@ -135,7 +138,16 @@ stage('Build Docker Image') {
                             bat "C:/Users/rr38/.jenkins/workspace/spring-jboss/runDocker.bat ${env.SAMPLE_APP_NAME} ${env.SAMPLE_IMG_NAME}"
                             
                             bat 'start chrome "http://localhost:8880/spring-jboss-0.0.1-SNAPSHOT/hello"'
-                        } else {
+			} else {
+				if (params.platform=="SampleApp_On_MSVx"){
+				 sh '''
+                                sudo docker login ${DOCKER_REGISTRY_URL} -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
+                                sudo docker build -t ${DOCKER_IMAGE} .
+                                sudo docker build -t ${LATEST_TAG} .
+                            '''        
+                            sh "./gradlew preRelease"	
+				}
+			} else {
                             sh '''
                                 sudo docker login ${DOCKER_REGISTRY_URL} -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
                                 sudo docker build -t ${DOCKER_IMAGE} .
@@ -151,7 +163,7 @@ stage('Build Docker Image') {
 stage('Push Image to Artifactory') { 
       steps {
             script {
-                    if (params.Local) {
+                    if (params.SampleApp_On_Local) {
                            
                             //bat 'docker login ${env.DOCKER_REGISTRY_URL} -u ${env.DOCKER_USER} -p ${env.DOCKER_PASSWORD}'
                             //bat 'docker push ${env.DOCKER_IMAGE}'
@@ -160,7 +172,16 @@ stage('Push Image to Artifactory') {
                             //bat "%cd%\\spring-jboss\\runDocker.bat ${env.BRANCH_NAME} ${env.BRANCH_NAME} ${env.BRANCH_NAME} ${env.BRANCH_NAME} ${env.BRANCH_NAME}" 
                             
                          //   start chrome ${url}                            
-                    } else {
+                    }  else {
+				if (params.platform=="SampleApp_On_MSVx"){
+				sh ''' 
+                            sudo docker push ${DOCKER_IMAGE}
+                            sudo docker push ${LATEST_TAG}
+                            sudo docker image remove ${DOCKER_IMAGE}
+                            sudo docker image remove ${LATEST_TAG}                            
+		                '''	
+				}
+			} else {
                         sh ''' 
                             sudo docker push ${DOCKER_IMAGE}
                             sudo docker push ${LATEST_TAG}
@@ -176,9 +197,16 @@ stage('Connect to Openshift ') {
       steps 
 	  {
         script {
-                    if (params.Local) {
+                    if (params.SampleApp_On_Local) {
                         echo "oc login windows"
-                    } else {        
+                    }  else {
+				if (params.platform=="SampleApp_On_MSVx"){
+				 sh '''
+                            echo "Connecting Openshift"
+                           
+                        '''	
+				}
+			} else {        
                         sh '''
                             echo "Connecting Openshift"
                            
@@ -192,9 +220,21 @@ stage('Deployment on OCP ') {
             steps 
             {
                 script {
-                    if (params.Local) {
+                    if (params.SampleApp_On_Local) {
                         echo "oc deploy windows"
-                    } else {         
+                    }  else {
+				if (params.platform=="SampleApp_On_MSVx"){
+					sh '''               
+                            //sudo sh dockerbuild.sh
+                            cd k8s
+                            //sudo sh kubedeploy.sh
+                           
+                            oc apply -f ${K8s_DEPLOYMENT_FILE}
+                            oc apply -f ${K8s_DEPLOYMENT_SERVICE_FILE}
+                            #cat ${K8s_DEPLOYMENT_FILE}
+                        '''
+				}
+			} else {         
                         sh '''               
                             //sudo sh dockerbuild.sh
                             cd k8s
