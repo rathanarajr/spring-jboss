@@ -219,7 +219,7 @@ stage('Deployment on OCP ') {
 }*/
 stage('Service Health Check') { 
       steps {
-	     bat 'curl --connection-timeout 10 -I http://localhost:8880/spring-jboss-0.0.1-SNAPSHOT/hello'       
+	     bat 'curl --connect-timeout 10 -I http://localhost:8880/spring-jboss-0.0.1-SNAPSHOT/hello'       
       }	  
 }
 }	
