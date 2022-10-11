@@ -139,7 +139,7 @@ stage('Build Docker Image') {
                             
                             bat 'start chrome "http://localhost:8880/spring-jboss-0.0.1-SNAPSHOT/hello"'
 			} else {
-				if (params.platform=="SampleApp_On_MSVx"){
+			   if (params.platform=="SampleApp_On_MSVx"){
 				 sh '''
                                 sudo docker login ${DOCKER_REGISTRY_URL} -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
                                 sudo docker build -t ${DOCKER_IMAGE} .
@@ -147,7 +147,7 @@ stage('Build Docker Image') {
                             '''        
                             sh "./gradlew preRelease"	
 				}
-			} else {
+			    } else {
                             sh '''
                                 sudo docker login ${DOCKER_REGISTRY_URL} -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
                                 sudo docker build -t ${DOCKER_IMAGE} .
@@ -156,6 +156,7 @@ stage('Build Docker Image') {
                             sh "./gradlew preRelease"
                         }
 	           }
+	  }
         }
     }
 
