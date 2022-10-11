@@ -217,5 +217,13 @@ stage('Deployment on OCP ') {
        '''
       }	  
 }*/
+stage('Service Health Check') { 
+      steps {
+	  sh '''
+       curl -v http://localhost:8880/spring-jboss-0.0.1-SNAPSHOT/hello
+       
+       '''
+      }	  
+}
 }	
 }
