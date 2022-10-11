@@ -12,7 +12,7 @@ def sendEmail()
 
 pipeline {
  environment {    
-    
+
     OCP_ENV_SELECTED=""
     app_selected=""
     env_selected=""
@@ -30,7 +30,7 @@ pipeline {
     url="http://localhost:%CONTAINER_PORT%/spring-jboss-0.0.1-SNAPSHOT/hello"
     SAMPLE_APP_NAME="spring-jboss"
     SAMPLE_IMG_NAME="sample-eap"
-    
+
    }
   agent any
  /* {
@@ -39,12 +39,12 @@ pipeline {
         }
     } */
 parameters {
-         booleanParam(name: "SampleApp_On_Local", defaultValue: true, description: 'WINDOWS Operating system')
-         booleanParam(name: "SampleApp_On_MSVx", defaultValue: false)
-         booleanParam(name: "LMApp_On_MSVx", defaultValue: false)
-         
-         //choice(name: 'Platform', choices: ['Local', 'MSVx', 'LMApp_On_MSVx'],  description: 'Platform where application will be deployed')
-        
+         booleanParam(name: "Local", defaultValue: true, description: 'WINDOWS Operating system')
+         booleanParam(name: "MSVx", defaultValue: false)
+         booleanParam(name: "AWS", defaultValue: false)
+
+         //choice(name: 'Platform', choices: ['Local', 'MSVx', 'AWS'],  description: 'Platform where application will be deployed')
+
     }
 
 stages {
@@ -56,7 +56,7 @@ stages {
                     env_selected = params.CONTAINER_PLATFORM_ENV
                     deploy_selected = params.CONTAINER_PLATFORM_DEPLOY
                     service_selected = params.CONTAINER_PLATFORM_SERVICE
-                   
+
                     }
                 }
             }
@@ -72,30 +72,27 @@ stages {
                 // checkout([$class: 'GitSCM', branches: [[name: '*/xsh_Final']], extensions: [], userRemoteConfigs: [[credentialsId: '6cc19445-3688-4efa-b8c8-989ad4e7bf27', url: 'git@github.dxc.com:LMA-FERN-App-Remediation/XA0165-XSH.git']]])
             //}             
         }            
-        
+
       }
     }
 
     stage('Build App') {
-        
+
       steps 
 	  {
         script {
-                    if (params.SampleApp_On_Local) {
+                    if (params.Local) {
                          configFileProvider([configFile(fileId: 'Maven-settings', variable: 'Maven_settings')]) {
                          bat 'mvn clean package'
                     }
                     } else {
-                        if (params.platform=="SampleApp_On_MSVx") {
+                        if (params.platform=="MSVx") {
                             configFileProvider([configFile(fileId: 'Maven-settings', variable: 'Maven_settings')]) {
                                 sh 'mvn clean package'
                             }
-			}  else {
-				configFileProvider([configFile(fileId: 'Maven-settings', variable: 'Maven_settings')]) {
-                                sh 'mvn clean package'
-			}  
+                        }    
                 }
-	     
+
           } 
       }
      } 
@@ -103,7 +100,6 @@ stages {
   steps {
         configFileProvider([configFile(fileId: 'Maven-settings', variable: 'Maven_settings')]) {
     sh 'mvn clean install sonar:sonar -Dsonar.projectName=XSH -Dsonar.host.url=http://localhost:9000/ -Dsonar.login=f7e2f1db7d19189a8d545089daf5bd7ea0d38d0e -Dsonar.login=admin -Dsonar.password=sonarqube -f xsh-multi-module/pom.xml'
-
 }
 }
 }*/
@@ -121,7 +117,7 @@ stage('Build Docker Image') {
      steps 
 	  {
         script {
-                        if (params.SampleApp_On_Local) {     
+                        if (params.Local) {     
                             bat 'xcopy /s/y "C:/Users/rr38/.jenkins/workspace/spring-jboss/target" "C:/Users/rr38/.jenkins/workspace/spring-jboss"'
                             //bat 'docker build --tag spring-jboss .'
                             //bat 'docker build --tag sample-eap .'
@@ -133,21 +129,12 @@ stage('Build Docker Image') {
                             //bat 'sudo docker push ${env.LATEST_TAG}'
                             //bat 'docker image remove ${envDOCKER_IMAGE}'
                             //bat 'docker image remove ${LATEST_TAG}'
-                            
+
                             //bat "%cd%\\MySimpleProject\\bin\\Execute.bat ${env.BRANCH_NAME}"}
                             bat "C:/Users/rr38/.jenkins/workspace/spring-jboss/runDocker.bat ${env.SAMPLE_APP_NAME} ${env.SAMPLE_IMG_NAME}"
-                            
+
                             bat 'start chrome "http://localhost:8880/spring-jboss-0.0.1-SNAPSHOT/hello"'
-			} else {
-			   if (params.platform=="SampleApp_On_MSVx"){
-				 sh '''
-                                sudo docker login ${DOCKER_REGISTRY_URL} -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
-                                sudo docker build -t ${DOCKER_IMAGE} .
-                                sudo docker build -t ${LATEST_TAG} .
-                            '''        
-                            sh "./gradlew preRelease"	
-				}
-			    } else {
+                        } else {
                             sh '''
                                 sudo docker login ${DOCKER_REGISTRY_URL} -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
                                 sudo docker build -t ${DOCKER_IMAGE} .
@@ -156,7 +143,6 @@ stage('Build Docker Image') {
                             sh "./gradlew preRelease"
                         }
 	           }
-	  }
         }
     }
 
@@ -164,25 +150,16 @@ stage('Build Docker Image') {
 stage('Push Image to Artifactory') { 
       steps {
             script {
-                    if (params.SampleApp_On_Local) {
-                           
+                    if (params.Local) {
+
                             //bat 'docker login ${env.DOCKER_REGISTRY_URL} -u ${env.DOCKER_USER} -p ${env.DOCKER_PASSWORD}'
                             //bat 'docker push ${env.DOCKER_IMAGE}'
                             //bat 'docker push ${env.LATEST_TAG}'
                             //bat "%cd%\\MySimpleProject\\bin\\Execute.bat ${env.BRANCH_NAME}"
                             //bat "%cd%\\spring-jboss\\runDocker.bat ${env.BRANCH_NAME} ${env.BRANCH_NAME} ${env.BRANCH_NAME} ${env.BRANCH_NAME} ${env.BRANCH_NAME}" 
-                            
+
                          //   start chrome ${url}                            
-                    }  else {
-				if (params.platform=="SampleApp_On_MSVx"){
-				sh ''' 
-                            sudo docker push ${DOCKER_IMAGE}
-                            sudo docker push ${LATEST_TAG}
-                            sudo docker image remove ${DOCKER_IMAGE}
-                            sudo docker image remove ${LATEST_TAG}                            
-		                '''	
-				}
-			} else {
+                    } else {
                         sh ''' 
                             sudo docker push ${DOCKER_IMAGE}
                             sudo docker push ${LATEST_TAG}
@@ -198,16 +175,9 @@ stage('Connect to Openshift ') {
       steps 
 	  {
         script {
-                    if (params.SampleApp_On_Local) {
+                    if (params.Local) {
                         echo "oc login windows"
-                    }  else {
-				if (params.platform=="SampleApp_On_MSVx"){
-				 sh '''
-                            echo "Connecting Openshift"
-                           
-                        '''	
-				}
-			} else {        
+                    } else {        
                         sh '''
                             echo "Connecting Openshift"
                            
@@ -221,21 +191,9 @@ stage('Deployment on OCP ') {
             steps 
             {
                 script {
-                    if (params.SampleApp_On_Local) {
+                    if (params.Local) {
                         echo "oc deploy windows"
-                    }  else {
-				if (params.platform=="SampleApp_On_MSVx"){
-					sh '''               
-                            //sudo sh dockerbuild.sh
-                            cd k8s
-                            //sudo sh kubedeploy.sh
-                           
-                            oc apply -f ${K8s_DEPLOYMENT_FILE}
-                            oc apply -f ${K8s_DEPLOYMENT_SERVICE_FILE}
-                            #cat ${K8s_DEPLOYMENT_FILE}
-                        '''
-				}
-			} else {         
+                    } else {         
                         sh '''               
                             //sudo sh dockerbuild.sh
                             cd k8s
@@ -255,7 +213,6 @@ stage('Deployment on OCP ') {
       steps {
 	  sh '''
        curl -u "svc-lma-remediation:Wg^65#mjn((" https://artifactory.dxc.com:443/artifactory/lma-maven/XSH/xsh-ear-0.0.1-SNAPSHOT.ear -o xsh-ear-0.0.1-SNAPSHOT.ear
-
        sshpass -p 'jboss-as' scp /data1/jenkins/workspace/xsh-deploy/xsh-ear-0.0.1-SNAPSHOT.ear jboss-as@10.15.172.44:/data/jboss-eap-7.3/standalone/deployments
        '''
       }	  
