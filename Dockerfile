@@ -51,13 +51,12 @@ RUN echo "JAVA_OPTS=\"\$JAVA_OPTS -Djboss.bind.address=0.0.0.0 -Djboss.bind.addr
 RUN chown -R jboss:jboss /data/jboss/eap
 
 # JBoss ports
-#EXPOSE 8080 9990 9999
+# EXPOSE 8080 9990 9999
 
 # start JBoss
-#ENTRYPOINT $JBOSS_HOME/bin/standalone.sh -c standalone-full-ha.xml
-
-ADD standalone-openshift-lma.xml "$JBOSS_HOME/standalone/configuration/"
-ENTRYPOINT $JBOSS_HOME/bin/standalone.sh -c standalone-openshift-lma.xml
+#ENTRYPOINT $JBOSS_HOME/bin/standalone.sh -c standalone-full-ha.xmlf
+ADD standalone-full.xml "$JBOSS_HOME/standalone/configuration/"
+ENTRYPOINT $JBOSS_HOME/bin/standalone.sh -c standalone-full.xml
 
 # deploy app
 ADD spring-jboss-0.0.1-SNAPSHOT.war "$JBOSS_HOME/standalone/deployments/"
@@ -82,17 +81,17 @@ ADD com/oracle/jdbc/main/ojdbc8-21.1.0.0.jar "$JBOSS_HOME/modules/com/oracle/jdb
 COPY com/thoughtworks/xstream/XStream/main/module.xml "$JBOSS_HOME/modules/com/thoughtworks/xstream/XStream/main/"
 COPY com/oracle/jdbc/main/module.xml "$JBOSS_HOME/modules/com/oracle/jdbc/main/"
 
-#RUN ["/opt/eap/bin/standalone.sh", "-b", "0.0.0.0", "-bmanagement", "0.0.0.0", "-c","standalone-openshift-lma.xml"]
+#RUN ["/opt/eap/bin/standalone.sh", "-b", "0.0.0.0", "-bmanagement", "0.0.0.0", "-c","standalone-full.xml"]
 
 #CMD /bin/bash
 
-#CMD ["/opt/eap/bin/standalone.sh", "-b", "0.0.0.0", "-bmanagement", "0.0.0.0", "-c","standalone-openshift-lma.xml"]
+#CMD ["/opt/eap/bin/standalone.sh", "-b", "0.0.0.0", "-bmanagement", "0.0.0.0", "-c","standalone-full.xml"]
 
 #RUN $JBOSS_HOME/bin/jboss-cli.sh --commands="connect","/core-service=management/management-interface=http-interface:write-attribute(name=console-enabled,value=true)"
 
 CMD ["$JBOSS_HOME/bin/jboss-cli.sh  /core-service=management/management-interface=http-interface:write-attribute(name=console-enabled,value=true)"]
 
-#CMD ["$JBOSS_HOME/bin/standalone.sh", "-b", "0.0.0.0", "-bmanagement", "0.0.0.0", "-c","standalone-openshift-lma.xml"]
+#CMD ["$JBOSS_HOME/bin/standalone.sh", "-b", "0.0.0.0", "-bmanagement", "0.0.0.0", "-c","standalone-full.xml"]
 
 CMD ["$JBOSS_HOME/bin/standalone.sh", "-c", "standalone-full.xml", "-b", "0.0.0.0","-bmanagement","0.0.0.0"] 
 
@@ -126,7 +125,7 @@ CMD ["$JBOSS_HOME/bin/standalone.sh", "-c", "standalone-full.xml", "-b", "0.0.0.
 
 ## COPY EXT MODULE TO SERVER
 #ADD module.xml $JBOSS_HOME/modules/com/thoughtworks/xstream/XStream/main/
-#ADD standalone-openshift-lma.xml /opt/eap/standalone/configuration/
+#ADD standalone-full.xml /opt/eap/standalone/configuration/
 #COPY com/thoughtworks/xstream/XStream/main/module.xml /opt/eap/modules/com/thoughtworks/xstream/XStream/main/
 #COPY com/oracle/jdbc/main/module.xml /opt/eap/modules/com/oracle/jdbc/main/
 
@@ -135,7 +134,7 @@ CMD ["$JBOSS_HOME/bin/standalone.sh", "-c", "standalone-full.xml", "-b", "0.0.0.
 
 #CMD ["/opt/eap/bin/standalone.sh --server-config=standalone-openshift.xml", "-b", "0.0.0.0"]
 
-#CMD ["/opt/eap/bin/standalone.sh", "-b", "0.0.0.0", "-bmanagement", "0.0.0.0", "-c","standalone-openshift-lma.xml"]
+#CMD ["/opt/eap/bin/standalone.sh", "-b", "0.0.0.0", "-bmanagement", "0.0.0.0", "-c","standalone-full.xml"]
 
 #CMD ["/opt/eap/bin/jboss-cli.sh  /core-service=management/management-interface=http-interface:write-attribute(name=console-enabled,value=true)"]
 
