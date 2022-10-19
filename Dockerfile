@@ -11,7 +11,7 @@ RUN echo '%wheel ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers && \
 sed -i 's/.*requiretty$/Defaults !requiretty/' /etc/sudoers
 
 # add a user for the application, with sudo permissions
-RUN useradd -m jboss ; echo jboss: | chpasswd ; usermod -a -G wheel jboss
+RUN useradd -m jboss ; echo jboss: | chpasswd ; usermod -a -G jboss jboss
 
 # create workdir
 RUN mkdir -p /data/eap/
