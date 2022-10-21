@@ -19,8 +19,8 @@ RUN mkdir -p /data/eap/
 WORKDIR /data/eap/
 
 # install JBoss EAP 6.4.0
-ADD jboss-eap-7.3.zip /data/eap/jboss-eap-7.3.zip
-RUN unzip /data/eap/jboss-eap-7.3.zip
+ADD jboss-eap-7.3.0.zip /data/eap/jboss-eap-7.3.0.zip
+RUN unzip /data/eap/jboss-eap-7.3.0.zip
 
 # set environment
 ENV JBOSS_HOME /data/eap/jboss-eap-7.3
