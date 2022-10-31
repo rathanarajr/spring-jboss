@@ -35,6 +35,11 @@ RUN echo "JAVA_OPTS=\"\$JAVA_OPTS -Djboss.bind.address=0.0.0.0 -Djboss.bind.addr
 # set permission folder
 RUN chown -R jboss:jboss /data1/jboss/eap
 
+#OpenShift assigns a random user to to run the container. Hence the log file permission error. 
+#According OpenShift docker guidelines jboss dir needs to have root group permissions
+USER root
+RUN chgrp -R 0 $JBOSS_HOME &&\
+chmod -R g+rw $JBOSS_HOME
 
 # JBoss ports
 EXPOSE 8080 9990 9999
@@ -43,7 +48,7 @@ EXPOSE 8080 9990 9999
 ENTRYPOINT $JBOSS_HOME/bin/standalone.sh -c standalone-full-ha.xml
 
 # deploy app
-#ADD spring-jboss-0.0.1-SNAPSHOT.war "$JBOSS_HOME/standalone/deployments/"
+ADD spring-jboss-0.0.1-SNAPSHOT.war "$JBOSS_HOME/standalone/deployments/"
 
-USER jboss
+#USER jboss
 CMD /bin/bash
