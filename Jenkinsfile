@@ -43,7 +43,7 @@ parameters {
          booleanParam(name: "MSVx", defaultValue: false)
          booleanParam(name: "AWS", defaultValue: false)
 
-         //choice(name: 'Platform', choices: ['Local', 'MSVx', 'AWS'],  description: 'Platform where application will be deployed')
+         choice(name: 'Environment', choices: ['POC', 'DEV', 'TSA','TSC','TRN','PROD'],  description: 'Environment where application will be deployed')
 
     }
 
@@ -193,16 +193,19 @@ stage('Deployment on OCP ') {
                 script {
                     if (params.Local) {
                         echo "oc deploy windows"
-                    } else {         
-                        sh '''               
-                            //sudo sh dockerbuild.sh
-                            cd k8s
-                            //sudo sh kubedeploy.sh
-                           
-                            oc apply -f ${K8s_DEPLOYMENT_FILE}
-                            oc apply -f ${K8s_DEPLOYMENT_SERVICE_FILE}
-                            #cat ${K8s_DEPLOYMENT_FILE}
-                        '''
+                    } else {
+			    if (params.Environment==POC) {
+				    sh '''               
+                            		//sudo sh dockerbuild.sh
+                            		cd k8s
+                            		//sudo sh kubedeploy.sh                           
+                            		oc apply -f ${K8s_DEPLOYMENT_FILE}
+                            		oc apply -f ${K8s_DEPLOYMENT_SERVICE_FILE}
+                            		#cat ${K8s_DEPLOYMENT_FILE}
+                        		'''			    
+			    } else { 
+			    }
+                        
                     }
             }
         }
