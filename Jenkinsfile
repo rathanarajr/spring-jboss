@@ -43,7 +43,7 @@ parameters {
          booleanParam(name: "MSVx", defaultValue: false)
          booleanParam(name: "AWS", defaultValue: false)
 
-         choice(name: 'CONTAINER_PLATFORM_ENV', choices: ['POC', 'DEV', 'TSA','TSC','TRN','PROD'],  description: 'Environment where application will be deployed')
+         //choice(name: 'CONTAINER_PLATFORM_ENV', choices: ['POC', 'DEV', 'TSA','TSC','TRN','PROD'],  description: 'Environment where application will be deployed')
 
     }
 
